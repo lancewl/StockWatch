@@ -24,6 +24,15 @@ public class Stock implements Serializable {
         this.changePercent = changePercent;
     }
 
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof Stock){
+            Stock s = (Stock) o;
+            return this.symbol.equals(s.getSymbol());
+        } else
+            return false;
+    }
+
     public String getSymbol() {
         return symbol;
     }
