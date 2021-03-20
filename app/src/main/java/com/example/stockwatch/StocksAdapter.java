@@ -1,5 +1,6 @@
 package com.example.stockwatch;
 
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,10 +42,32 @@ public class StocksAdapter extends RecyclerView.Adapter<StockViewHolder> {
 
         Stock stock = stockList.get(position);
 
-        holder.symbol.setText(stock.getSymbol());
-        holder.company.setText(stock.getCompany());
-        holder.price.setText(stock.getPrice());
-        holder.change.setText(stock.getChange() + stock.getChangePercent());
+        String symbol = stock.getSymbol();
+        String company = stock.getCompany();
+        Double price = stock.getPrice();
+        Double change = stock.getChange();
+        Double changePercent = stock.getChangePercent();
+        String sign = "";
+
+        if (change > 0) {
+            sign = "▲ ";
+            holder.symbol.setTextColor(Color.GREEN);
+            holder.company.setTextColor(Color.GREEN);
+            holder.price.setTextColor(Color.GREEN);
+            holder.change.setTextColor(Color.GREEN);
+        } else {
+            sign = "▼ ";
+            holder.symbol.setTextColor(Color.RED);
+            holder.company.setTextColor(Color.RED);
+            holder.price.setTextColor(Color.RED);
+            holder.change.setTextColor(Color.RED);
+        }
+
+
+        holder.symbol.setText(symbol);
+        holder.company.setText(company);
+        holder.price.setText(price + "");
+        holder.change.setText(sign + change + " (" + changePercent + "%)");
     }
 
     @Override

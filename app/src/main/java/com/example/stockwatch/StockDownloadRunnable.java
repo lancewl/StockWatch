@@ -88,9 +88,9 @@ public class StockDownloadRunnable implements Runnable {
             JSONObject stock = new JSONObject(s);
             String symbol = stock.getString("symbol");
             String company = stock.getString("companyName");
-            String price = stock.getString("latestPrice");
-            String change  = stock.getString("change");
-            String changePercent  = stock.getString("changePercent");
+            Double price = stock.getDouble("latestPrice");
+            Double change  = stock.getDouble("change");
+            Double changePercent  = stock.getDouble("changePercent");
 
             return new Stock(symbol, company, price, change, changePercent);
         } catch (Exception e) {

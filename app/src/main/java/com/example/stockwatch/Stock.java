@@ -12,11 +12,11 @@ public class Stock implements Serializable {
 
     private String symbol;
     private String company;
-    private String price;
-    private String change;
-    private String changePercent;
+    private Double price;
+    private Double change;
+    private Double changePercent;
 
-    Stock(String symbol, String company, String price, String change, String changePercent) {
+    Stock(String symbol, String company, Double price, Double change, Double changePercent) {
         this.symbol = symbol;
         this.company = company;
         this.price = price;
@@ -30,15 +30,15 @@ public class Stock implements Serializable {
 
     public String getCompany() { return company; }
 
-    public String getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public String getChange() {
+    public Double getChange() {
         return change;
     }
 
-    public String getChangePercent() {
+    public Double getChangePercent() {
         return changePercent;
     }
 
@@ -50,15 +50,15 @@ public class Stock implements Serializable {
         this.company = company;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public void setChange(String change) {
+    public void setChange(Double change) {
         this.change = change;
     }
 
-    public void setChangePercent(String changePercent) {
+    public void setChangePercent(Double changePercent) {
         this.changePercent = changePercent;
     }
 
