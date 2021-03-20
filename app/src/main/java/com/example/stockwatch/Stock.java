@@ -14,12 +14,14 @@ public class Stock implements Serializable {
     private String company;
     private String price;
     private String change;
+    private String changePercent;
 
-    Stock(String symbol, String company, String price, String change) {
+    Stock(String symbol, String company, String price, String change, String changePercent) {
         this.symbol = symbol;
         this.company = company;
         this.price = price;
         this.change = change;
+        this.changePercent = changePercent;
     }
 
     public String getSymbol() {
@@ -34,6 +36,10 @@ public class Stock implements Serializable {
 
     public String getChange() {
         return change;
+    }
+
+    public String getChangePercent() {
+        return changePercent;
     }
 
     public void setSymbol(String symbol) {
@@ -52,6 +58,10 @@ public class Stock implements Serializable {
         this.change = change;
     }
 
+    public void setChangePercent(String changePercent) {
+        this.changePercent = changePercent;
+    }
+
     @NonNull
     public String toString() {
 
@@ -64,6 +74,7 @@ public class Stock implements Serializable {
             jsonWriter.name("company").value(getCompany());
             jsonWriter.name("price").value(getPrice());
             jsonWriter.name("change").value(getChange());
+            jsonWriter.name("changePercent").value(getChangePercent());
             jsonWriter.endObject();
             jsonWriter.close();
             return sw.toString();
