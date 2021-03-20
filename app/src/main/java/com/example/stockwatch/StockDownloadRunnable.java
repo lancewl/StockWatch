@@ -1,5 +1,7 @@
 package com.example.stockwatch;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
@@ -10,28 +12,36 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class NameDownloadRunnable implements Runnable {
+public class StockDownloadRunnable implements Runnable {
 
-    private static final String TAG = "NameDownloadRunnable";
+    private static final String TAG = "StockDownloadRunnable";
 
     private final MainActivity mainActivity;
+    private final String symbol;
 
-    private static final String nameURL = "https://api.iextrading.com/1.0/ref-data/symbols";
+    private static final String stockURL = "https://cloud.iexapis.com/stable/stock/";
+    private static final String yourAPIKey = "pk_27e8a19db093496db1398b7a363d0b00";
 
-    NameDownloadRunnable(MainActivity mainActivity) {
+    StockDownloadRunnable(MainActivity mainActivity, String symbol) {
         this.mainActivity = mainActivity;
+        this.symbol = symbol;
     }
 
 
     @Override
     public void run() {
 
-        Uri.Builder buildURL = Uri.parse(nameURL).buildUpon();
+        Uri.Builder buildURL = Uri.parse(stockURL).buildUpon();
 
+        buildURL.appendPath(symbol);
+        buildURL.appendPath("quote");
+        buildURL.appendQueryParameter("token", yourAPIKey);
         String urlToUse = buildURL.build().toString();
         Log.d(TAG, "doInBackground: " + urlToUse);
 
@@ -69,30 +79,24 @@ public class NameDownloadRunnable implements Runnable {
     }
 
     public void handleResults(final String jsonString) {
-        final HashMap<String, String> map = parseJSON(jsonString);
-        mainActivity.runOnUiThread(() -> mainActivity.updateSymbolList(map));
+        final Stock s = parseJSON(jsonString);
+        mainActivity.runOnUiThread(() -> mainActivity.updateStock(s));
     }
 
-    private HashMap<String, String> parseJSON(String s) {
-        HashMap<String, String> map = new HashMap<String, String>();
-
+    private Stock parseJSON(String s) {
         try {
-            JSONArray stockList = new JSONArray(s);
+            JSONObject stock = new JSONObject(s);
+            String symbol = stock.getString("symbol");
+            String company = stock.getString("companyName");
+            String price = stock.getString("latestPrice");
+            String change  = stock.getString("change");
+            String changePercent  = stock.getString("changePercent");
 
-            for(int i=0; i<stockList.length(); i++) {
-                JSONObject stockObject = stockList.getJSONObject(i);
-
-                String symbol = stockObject.getString("symbol");
-                String name = stockObject.getString("name");
-
-                if (!symbol.isEmpty() && ! name.isEmpty()){
-                    map.put(symbol, name);
-                }
-            }
+            return new Stock(symbol, company, price, change, changePercent);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return map;
+        return null;
     }
 }

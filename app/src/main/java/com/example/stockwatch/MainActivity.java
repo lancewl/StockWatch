@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -142,18 +143,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return false;
     }
 
+    private void addStock(String symbol) {
+        doStockDownload(symbol);
+    }
+
     private void doNameDownload() {
         NameDownloadRunnable loaderTaskRunnable = new NameDownloadRunnable(this);
         new Thread(loaderTaskRunnable).start();
     }
 
-    private void addStock(String symbol) {
-        // Stock s = new Stock(symbol, symbolMap.get(symbol), null, null);
-        // stockList.add(s);
-        // mAdapter.notifyDataSetChanged();
+    private void doStockDownload(String symbol) {
+        StockDownloadRunnable loaderTaskRunnable = new StockDownloadRunnable(this, symbol);
+        new Thread(loaderTaskRunnable).start();
     }
 
-    public void updateData(HashMap<String, String> map) {
+    public void updateStock(Stock s) {
+        stockList.add(s);
+        stockList.sort(Comparator.comparing(Stock::getSymbol));
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void updateSymbolList(HashMap<String, String> map) {
         symbolMap.putAll(map);
     }
 }
