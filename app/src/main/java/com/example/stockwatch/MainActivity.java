@@ -7,9 +7,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new StocksDecoration(20));
+
+        doNameDownload();
     }
 
     @Override
@@ -42,8 +46,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if (item.getItemId() == R.id.addBtn) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Stock Selection");
+            builder.setMessage("Please enter a Stock Symbol:");
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+            builder.setView(input);
+
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    String symbol = input.getText().toString();
+                    if (symbolMap.containsKey(symbol)) {
+                        Stock s = new Stock(symbol, symbolMap.get(symbol), null, null);
+                        stockList.add(s);
+                        mAdapter.notifyDataSetChanged();
+                    } else {
+
+                    }
+                }
+            });
+            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) { }
+            });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -67,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        builder.setTitle("Delete Stock '" + s.getSymbol() + "'?");
+        builder.setTitle("Delete Stock");
+        builder.setMessage("Delete Stock Symbol " + s.getSymbol() + "?");
 
 
         builder.setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
@@ -85,6 +115,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
 
         return false;
+    }
+
+    private void doNameDownload() {
+        NameDownloadRunnable loaderTaskRunnable = new NameDownloadRunnable(this);
+        new Thread(loaderTaskRunnable).start();
     }
 
     public void updateData(HashMap<String, String> map) {
