@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Stock Watch</string>
+    <string name="add_btn">Add</string>
+    <string name="stock">Stock</string>
+    <string name="company_name">Company name</string>
+    <string name="price">100.00</string>
+    <string name="priceChange">▲ 0.15 (0.15%)</string>
+</resources>
