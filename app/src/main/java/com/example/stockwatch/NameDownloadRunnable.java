@@ -90,7 +90,9 @@ public class NameDownloadRunnable implements Runnable {
                 String symbol = stockObject.getString("symbol");
                 String name = stockObject.getString("name");
 
-                map.put(symbol, name);
+                if (!symbol.isEmpty() && ! name.isEmpty()){
+                    map.put(symbol, name);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
