@@ -27,7 +27,7 @@ public class NameDownloadRunnable implements Runnable {
 
     private static final String nameURL = "https://api.iextrading.com/1.0/ref-data/symbols";
 
-    NameDownloadRunnable(MainActivity mainActivity, String city, boolean fahrenheit) {
+    NameDownloadRunnable(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
     }
 
