@@ -24,8 +24,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // DB Table Create Code
     private static final String SQL_CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + " (" +
-                    SYMBOL + "TEXT not null unique," +
-                    COMPANY + "TEXT not null)";
+                    SYMBOL + " TEXT not null unique," +
+                    COMPANY + " TEXT not null)";
 
     private final SQLiteDatabase database;
     private final MainActivity mainActivity;
@@ -50,7 +50,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void addStock(Stock stock) {
         Log.d(TAG, "addStock: Adding " + stock.getSymbol());
-        ContentValues values = new ContentValues(); values.put(SYMBOL, stock.getSymbol()); values.put(COMPANY, stock.getCompany());
+        ContentValues values = new ContentValues();
+        values.put(SYMBOL, stock.getSymbol());
+        values.put(COMPANY, stock.getCompany());
         database.insert(TABLE_NAME, null, values);
         Log.d(TAG, "addStock: Add Complete");
     }
@@ -73,7 +75,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 null, // don't filter by row groups
                 null); // The sort order
         if (cursor != null) { cursor.moveToFirst();
-            for (int i = 0; i < cursor.getCount(); i++) { String symbol = cursor.getString(0); String company = cursor.getString(1); stocks.add(new String[]{symbol, company}); cursor.moveToNext();
+            for (int i = 0; i < cursor.getCount(); i++) {
+                String symbol = cursor.getString(0);
+                String company = cursor.getString(1);
+                stocks.add(new String[]{symbol, company});
+                cursor.moveToNext();
             }
             cursor.close(); }
         return stocks;

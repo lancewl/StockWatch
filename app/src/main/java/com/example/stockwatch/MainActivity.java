@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RecyclerView recyclerView; // Layout's recyclerview
     private StocksAdapter mAdapter; // Data to recyclerview adapter
 
+    private DatabaseHandler databaseHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +38,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new StocksDecoration(20));
 
+        databaseHandler = new DatabaseHandler(this);
+        ArrayList<String[]> saveStocks = databaseHandler.loadStocks();
+
         doNameDownload();
+
+        for (int i = 0; i < saveStocks.size(); i++) {
+            doStockDownload(saveStocks.get(i)[0], true);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        databaseHandler.shutDown();
+        super.onDestroy();
     }
 
     @Override
@@ -76,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } else if (matchItems.size() == 1) {
                         String str = matchItems.get(0);
                         String[] arrOfStr = str.split("-", 2);
-                        addStock(arrOfStr[0]);
+                        doStockDownload(arrOfStr[0], false);
                     } else {
                         final CharSequence[] sArray = matchItems.toArray(new CharSequence[matchItems.size()]);
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -84,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         builder.setItems(sArray, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 String[] arrOfStr = sArray[which].toString().split("-", 2);
-                                addStock(arrOfStr[0]);
+                                doStockDownload(arrOfStr[0], false);
                             }
                         });
                         AlertDialog select_dialog = builder.create();
@@ -143,24 +158,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return false;
     }
 
-    private void addStock(String symbol) {
-        doStockDownload(symbol);
-    }
-
     private void doNameDownload() {
         NameDownloadRunnable loaderTaskRunnable = new NameDownloadRunnable(this);
         new Thread(loaderTaskRunnable).start();
     }
 
-    private void doStockDownload(String symbol) {
-        StockDownloadRunnable loaderTaskRunnable = new StockDownloadRunnable(this, symbol);
+    private void doStockDownload(String symbol, Boolean init) {
+        StockDownloadRunnable loaderTaskRunnable = new StockDownloadRunnable(this, symbol, init);
         new Thread(loaderTaskRunnable).start();
     }
 
-    public void updateStock(Stock s) {
+    public void initStock(Stock s) {
         stockList.add(s);
         stockList.sort(Comparator.comparing(Stock::getSymbol));
         mAdapter.notifyDataSetChanged();
+    }
+
+    public void addStock(Stock s) {
+        if (!stockList.contains(s)) {
+            stockList.add(s);
+            stockList.sort(Comparator.comparing(Stock::getSymbol));
+            databaseHandler.addStock(s);
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     public void updateSymbolList(HashMap<String, String> map) {

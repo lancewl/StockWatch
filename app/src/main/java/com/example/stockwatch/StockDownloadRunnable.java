@@ -24,13 +24,15 @@ public class StockDownloadRunnable implements Runnable {
 
     private final MainActivity mainActivity;
     private final String symbol;
+    private final Boolean init;
 
     private static final String stockURL = "https://cloud.iexapis.com/stable/stock/";
     private static final String yourAPIKey = "pk_27e8a19db093496db1398b7a363d0b00";
 
-    StockDownloadRunnable(MainActivity mainActivity, String symbol) {
+    StockDownloadRunnable(MainActivity mainActivity, String symbol, Boolean init) {
         this.mainActivity = mainActivity;
         this.symbol = symbol;
+        this.init = init;
     }
 
 
@@ -80,7 +82,11 @@ public class StockDownloadRunnable implements Runnable {
 
     public void handleResults(final String jsonString) {
         final Stock s = parseJSON(jsonString);
-        mainActivity.runOnUiThread(() -> mainActivity.updateStock(s));
+        if (init) {
+            mainActivity.runOnUiThread(() -> mainActivity.initStock(s));
+        } else {
+            mainActivity.runOnUiThread(() -> mainActivity.addStock(s));
+        }
     }
 
     private Stock parseJSON(String s) {
