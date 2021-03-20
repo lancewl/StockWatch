@@ -143,8 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         builder.setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                stockList.remove(pos);
-                mAdapter.notifyDataSetChanged();
+                deleteStock(pos);
             }
         });
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -180,7 +179,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stockList.sort(Comparator.comparing(Stock::getSymbol));
             databaseHandler.addStock(s);
             mAdapter.notifyDataSetChanged();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Duplicate Stock");
+            builder.setMessage("Stock Symbol " + s.getSymbol() + " is already displayed");
+            AlertDialog err_dialog = builder.create();
+            err_dialog.show();
         }
+    }
+
+    public void deleteStock(int pos) {
+        Stock s = stockList.get(pos);
+        databaseHandler.deleteStock(s.getSymbol());
+        stockList.remove(pos);
+        mAdapter.notifyDataSetChanged();
     }
 
     public void updateSymbolList(HashMap<String, String> map) {
