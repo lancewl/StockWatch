@@ -56,13 +56,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    String symbol = input.getText().toString();
-                    if (symbolMap.containsKey(symbol)) {
-                        Stock s = new Stock(symbol, symbolMap.get(symbol), null, null);
-                        stockList.add(s);
-                        mAdapter.notifyDataSetChanged();
-                    } else {
+                    String inputText = input.getText().toString();
+                    List<String> matchItems = new ArrayList<String>();
+                    for(HashMap.Entry item  :  symbolMap.entrySet()) {
+                        String k = item.getKey().toString();
+                        String v = item.getValue().toString();
+                        if (k.contains(inputText)) {
+                            matchItems.add(k + "-" + v);
+                        }
+                    }
 
+                    if (matchItems.isEmpty()){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("Symbol Not Found: " + inputText);
+                        builder.setMessage("Data for stock symbol");
+                        AlertDialog err_dialog = builder.create();
+                        err_dialog.show();
+                    } else if (matchItems.size() == 1) {
+                        String str = matchItems.get(0);
+                        String[] arrOfStr = str.split("-", 2);
+                        addStock(arrOfStr[0]);
+                    } else {
+                        final CharSequence[] sArray = matchItems.toArray(new CharSequence[matchItems.size()]);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("Make a selection");
+                        builder.setItems(sArray, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                String[] arrOfStr = sArray[which].toString().split("-", 2);
+                                addStock(arrOfStr[0]);
+                            }
+                        });
+                        AlertDialog select_dialog = builder.create();
+                        select_dialog.show();
                     }
                 }
             });
@@ -120,6 +145,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void doNameDownload() {
         NameDownloadRunnable loaderTaskRunnable = new NameDownloadRunnable(this);
         new Thread(loaderTaskRunnable).start();
+    }
+
+    private void addStock(String symbol) {
+        // Stock s = new Stock(symbol, symbolMap.get(symbol), null, null);
+        // stockList.add(s);
+        // mAdapter.notifyDataSetChanged();
     }
 
     public void updateData(HashMap<String, String> map) {
