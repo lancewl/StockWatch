@@ -49,7 +49,7 @@ public class StocksAdapter extends RecyclerView.Adapter<StockViewHolder> {
         Double changePercent = stock.getChangePercent();
         String sign = "";
 
-        if (change > 0) {
+        if (change >= 0) {
             sign = "▲ ";
             holder.symbol.setTextColor(Color.GREEN);
             holder.company.setTextColor(Color.GREEN);
@@ -67,7 +67,7 @@ public class StocksAdapter extends RecyclerView.Adapter<StockViewHolder> {
         holder.symbol.setText(symbol);
         holder.company.setText(company);
         holder.price.setText(price + "");
-        holder.change.setText(sign + change + " (" + changePercent + "%)");
+        holder.change.setText(sign + change + " (" + String.format("%.2f", changePercent) + "%)");
     }
 
     @Override

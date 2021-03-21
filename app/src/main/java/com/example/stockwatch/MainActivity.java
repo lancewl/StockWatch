@@ -8,8 +8,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Menu;
@@ -32,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SwipeRefreshLayout swiper; // The SwipeRefreshLayout
 
     private DatabaseHandler databaseHandler;
+
+    private static final String marketwatchURL = "http://www.marketwatch.com/investing/stock/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,8 +163,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {  // click listener called by ViewHolder clicks
         int pos = recyclerView.getChildLayoutPosition(v);
         Stock s = stockList.get(pos);
+        String symbol = s.getSymbol();
 
-        // TODO: open web page
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(marketwatchURL + symbol));
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     // From OnLongClickListener
