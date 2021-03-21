@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private RecyclerView recyclerView; // Layout's recyclerview
     private StocksAdapter mAdapter; // Data to recyclerview adapter
+    private SwipeRefreshLayout swiper; // The SwipeRefreshLayout
 
     private DatabaseHandler databaseHandler;
 
@@ -42,10 +44,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new StocksDecoration(20));
 
-        databaseHandler = new DatabaseHandler(this);
-        ArrayList<String[]> saveStocks = databaseHandler.loadStocks();
+        swiper = findViewById(R.id.swiper);
+        swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                doRefresh();
+            }
+        });
 
         doNameDownload();
+
+        databaseHandler = new DatabaseHandler(this);
+        ArrayList<String[]> saveStocks = databaseHandler.loadStocks();
 
         if (checkNetwork()) {
             for (int i = 0; i < saveStocks.size(); i++) {
@@ -194,6 +204,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
         return isConnected;
+    }
+
+    private void doRefresh() {
+        databaseHandler = new DatabaseHandler(this);
+        ArrayList<String[]> saveStocks = databaseHandler.loadStocks();
+
+        if (checkNetwork()) {
+            stockList.clear();
+            mAdapter.notifyDataSetChanged();
+            for (int i = 0; i < saveStocks.size(); i++) {
+                doStockDownload(saveStocks.get(i)[0], true);
+            }
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("No Network Connection");
+            builder.setMessage("Stocks Cannot Be Updated Without A Network Connection");
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
+        swiper.setRefreshing(false);
     }
 
     private void doNameDownload() {
