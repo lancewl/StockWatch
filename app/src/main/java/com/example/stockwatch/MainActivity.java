@@ -5,13 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,8 +47,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         doNameDownload();
 
-        for (int i = 0; i < saveStocks.size(); i++) {
-            doStockDownload(saveStocks.get(i)[0], true);
+        if (checkNetwork()) {
+            for (int i = 0; i < saveStocks.size(); i++) {
+                doStockDownload(saveStocks.get(i)[0], true);
+            }
+        } else {
+            for (int i = 0; i < saveStocks.size(); i++) {
+                Stock s = new Stock(saveStocks.get(i)[0], saveStocks.get(i)[1], 0.0, 0.0, 0.0);
+                initStock(s);
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("No Network Connection");
+            builder.setMessage("Stocks Cannot Be Loaded Without A Network Connection");
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
     }
 
@@ -63,56 +79,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.addBtn) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Stock Selection");
-            builder.setMessage("Please enter a Stock Symbol:");
-            final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-            builder.setView(input);
+            if (checkNetwork()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Stock Selection");
+                builder.setMessage("Please enter a Stock Symbol:");
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+                builder.setView(input);
 
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    String inputText = input.getText().toString();
-                    List<String> matchItems = new ArrayList<String>();
-                    for(HashMap.Entry item  :  symbolMap.entrySet()) {
-                        String k = item.getKey().toString();
-                        String v = item.getValue().toString();
-                        if (k.contains(inputText)) {
-                            matchItems.add(k + "-" + v);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String inputText = input.getText().toString();
+                        List<String> matchItems = new ArrayList<String>();
+                        for(HashMap.Entry item  :  symbolMap.entrySet()) {
+                            String k = item.getKey().toString();
+                            String v = item.getValue().toString();
+                            if (k.contains(inputText)) {
+                                matchItems.add(k + "-" + v);
+                            }
+                        }
+
+                        if (matchItems.isEmpty()){
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("Symbol Not Found: " + inputText);
+                            builder.setMessage("Data for stock symbol");
+                            AlertDialog err_dialog = builder.create();
+                            err_dialog.show();
+                        } else if (matchItems.size() == 1) {
+                            String str = matchItems.get(0);
+                            String[] arrOfStr = str.split("-", 2);
+                            doStockDownload(arrOfStr[0], false);
+                        } else {
+                            final CharSequence[] sArray = matchItems.toArray(new CharSequence[matchItems.size()]);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("Make a selection");
+                            builder.setItems(sArray, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String[] arrOfStr = sArray[which].toString().split("-", 2);
+                                    doStockDownload(arrOfStr[0], false);
+                                }
+                            });
+                            AlertDialog select_dialog = builder.create();
+                            select_dialog.show();
                         }
                     }
+                });
+                builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) { }
+                });
 
-                    if (matchItems.isEmpty()){
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("Symbol Not Found: " + inputText);
-                        builder.setMessage("Data for stock symbol");
-                        AlertDialog err_dialog = builder.create();
-                        err_dialog.show();
-                    } else if (matchItems.size() == 1) {
-                        String str = matchItems.get(0);
-                        String[] arrOfStr = str.split("-", 2);
-                        doStockDownload(arrOfStr[0], false);
-                    } else {
-                        final CharSequence[] sArray = matchItems.toArray(new CharSequence[matchItems.size()]);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("Make a selection");
-                        builder.setItems(sArray, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                String[] arrOfStr = sArray[which].toString().split("-", 2);
-                                doStockDownload(arrOfStr[0], false);
-                            }
-                        });
-                        AlertDialog select_dialog = builder.create();
-                        select_dialog.show();
-                    }
-                }
-            });
-            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) { }
-            });
-
-            AlertDialog dialog = builder.create();
-            dialog.show();
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("No Network Connection");
+                builder.setMessage("Stocks Cannot Be Added Without A Network Connection");
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
 
             return true;
         } else {
@@ -137,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+        builder.setIcon(android.R.drawable.ic_menu_delete);
         builder.setTitle("Delete Stock");
         builder.setMessage("Delete Stock Symbol " + s.getSymbol() + "?");
 
@@ -155,6 +180,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
 
         return false;
+    }
+
+    private Boolean checkNetwork() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            Toast.makeText(this, "Cannot access ConnectivityManager", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
     }
 
     private void doNameDownload() {
@@ -181,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mAdapter.notifyDataSetChanged();
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setIcon(android.R.drawable.ic_dialog_alert);
             builder.setTitle("Duplicate Stock");
             builder.setMessage("Stock Symbol " + s.getSymbol() + " is already displayed");
             AlertDialog err_dialog = builder.create();
