@@ -14,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 builder.setTitle("Stock Selection");
                 builder.setMessage("Please enter a Stock Symbol:");
                 final EditText input = new EditText(this);
+                input.setGravity(Gravity.CENTER);
                 input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
                 builder.setView(input);
 
@@ -108,10 +110,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         for(HashMap.Entry item  :  symbolMap.entrySet()) {
                             String k = item.getKey().toString();
                             String v = item.getValue().toString();
-                            if (k.contains(inputText)) {
+                            if (k.contains(inputText) || v.contains(inputText)) {
                                 matchItems.add(k + "-" + v);
                             }
                         }
+
+                        matchItems.sort( Comparator.comparing( String::toString ) );
 
                         if (matchItems.isEmpty()){
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -132,6 +136,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     String[] arrOfStr = sArray[which].toString().split("-", 2);
                                     doStockDownload(arrOfStr[0], false);
                                 }
+                            });
+                            builder.setNegativeButton("NEVERMIND", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) { }
                             });
                             AlertDialog select_dialog = builder.create();
                             select_dialog.show();
